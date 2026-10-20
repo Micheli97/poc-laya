@@ -1,0 +1,144 @@
+{
+  "fonte": "rodada 6, base original (semente 20261008): previsoes em avaliacao/saida/r6-*.preds.jsonl, medidas por catalogo-v2/avaliacao/avaliar.mjs",
+  "saneamento": {
+    "golden": {
+      "nb2000_sozinho": {
+        "aplicados": 100,
+        "acerto": 91,
+        "pioras": 3.8,
+        "atributos_acerto": 0,
+        "atributos_inventados": 0,
+        "atributos_avaliados": 4938,
+        "marca": 93.5
+      },
+      "laya_ft5000_sozinho": {
+        "aplicados": 100,
+        "acerto": 94.6,
+        "pioras": 3,
+        "atributos_acerto": null,
+        "atributos_inventados": null,
+        "atributos_avaliados": 0,
+        "marca": null
+      },
+      "voto_b_ft5000": {
+        "aplicados": 93.4,
+        "acerto": 98.9,
+        "pioras": 0.3,
+        "atributos_acerto": null,
+        "atributos_inventados": null,
+        "atributos_avaliados": 0,
+        "marca": null
+      },
+      "voto_d": {
+        "aplicados": 49.9,
+        "acerto": 99.6,
+        "pioras": 0,
+        "atributos_acerto": null,
+        "atributos_inventados": null,
+        "atributos_avaliados": 0,
+        "marca": null
+      }
+    },
+    "teste_rodadas": {
+      "nb2000_sozinho": {
+        "aplicados": 100,
+        "acerto": 92.3,
+        "pioras": 3.8,
+        "atributos_acerto": 0,
+        "atributos_inventados": 0,
+        "atributos_avaliados": 2457,
+        "marca": 96.4
+      },
+      "laya_ft5000_sozinho": {
+        "aplicados": 100,
+        "acerto": 94,
+        "pioras": 3.4,
+        "atributos_acerto": null,
+        "atributos_inventados": null,
+        "atributos_avaliados": 0,
+        "marca": null
+      },
+      "voto_b_ft5000": {
+        "aplicados": 94,
+        "acerto": 99.6,
+        "pioras": 0.2,
+        "atributos_acerto": null,
+        "atributos_inventados": null,
+        "atributos_avaliados": 0,
+        "marca": null
+      },
+      "voto_d": {
+        "aplicados": 48.4,
+        "acerto": 99.6,
+        "pioras": 0,
+        "atributos_acerto": null,
+        "atributos_inventados": null,
+        "atributos_avaliados": 0,
+        "marca": null
+      }
+    }
+  },
+  "ficha": {
+    "golden": {
+      "codigo": {
+        "aplicados": 91.9,
+        "acerto": 95.9,
+        "pioras": 1.1,
+        "atributos_acerto": 96.6,
+        "atributos_inventados": 0.9,
+        "atributos_avaliados": 4796,
+        "marca": 93.5
+      },
+      "codigo_laya_ft5000": {
+        "aplicados": 91.9,
+        "acerto": 95.9,
+        "pioras": 1.1,
+        "atributos_acerto": 97.6,
+        "atributos_inventados": 1.3,
+        "atributos_avaliados": 4796,
+        "marca": 93.5
+      },
+      "parametros": "subcategoria do NB (treino_2000) com vendedor, min=1 modelo=sim veto=1.01 limiar=0.5; Laya ajustado com confianca minima 0,9"
+    }
+  },
+  "novos": {
+    "novos_teste_nb_baixa_confianca_0_2": {
+      "fora": {
+        "precisao_%": 64.7,
+        "cobertura_%": 28.6
+      },
+      "duplicados": {
+        "precisao_%": 82.3,
+        "cobertura_%": 81.2
+      },
+      "invalidos": {
+        "precisao_%": 100,
+        "cobertura_%": 100
+      },
+      "parametros": "NB treino_2000, fora=baixa-confianca 0,2, sem desempate"
+    }
+  },
+  "busca": {
+    "sinonimos_675_consultas_de_teste": {
+      "intencao": {
+        "subcategorias_exatas_%": 92.9,
+        "contem_alguma_certa_%": 93.9,
+        "so_subcategorias_certas_%": 93,
+        "filtros_cobertura_%": 93.9,
+        "filtros_precisao_%": 94.7,
+        "marca_ok_%": 100,
+        "consultas": 675
+      },
+      "lista": {
+        "P@10_%": 95.5,
+        "NDCG@10_%": 94.2,
+        "precisao_lista_inteira_%": 88.2,
+        "cobertura_%": 78.4,
+        "sem_resultado_%": 0.9,
+        "tamanho_medio_resultado": 258,
+        "consultas": 675
+      },
+      "parametros": "catalogo curado: NB treino_2000 + vendedor + ficha por codigo (sem LLM); consultas: as de indice nao multiplo de 4 de buscas.jsonl"
+    }
+  }
+}
