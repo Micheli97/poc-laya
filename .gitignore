@@ -1,0 +1,13 @@
+# checkpoints do Laya e zips (1,8 GB cada; ficam no Drive, nunca no repositorio)
+results/
+laya-ft/
+*.safetensors
+*.zip
+# dataset descompactado (o repositorio guarda so os .gz)
+catalogo-v2/dados/produtos.jsonl
+catalogo-v2/dados/novos.jsonl
+# gerado pelo Python/Node
+__pycache__/
+*.pyc
+node_modules/
+.env

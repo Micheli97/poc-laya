@@ -1,0 +1,3 @@
+# dados: nunca converter fim de linha (os sha256 do LEIA-ME dependem dos bytes exatos)
+catalogo-v2/dados/* -text
+*.gz binary
