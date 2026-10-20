@@ -1,6 +1,6 @@
 # poc_laya: PoC do agente de curadoria de catálogo
 
-Tudo o que é necessário para **executar de novo os testes** da PoC e **responder, com número, às nove perguntas** abaixo: o agente que organiza o catálogo, melhora a busca e trata os itens novos, com o Laya ajustado, o Naive Bayes da biblioteca **scikit-learn**, vizinhos por embeddings e o LLM só nas disputas.
+Tudo o que é necessário para **executar de novo os testes** da PoC e **responder, com número, às nove perguntas** abaixo: o agente que organiza o catálogo, melhora a busca e trata os itens novos, com o Laya ajustado, o Naive Bayes (o **código já testado**; o da biblioteca scikit-learn é opcional), vizinhos por embeddings e o LLM só nas disputas.
 
 > **Dados sintéticos por padrão.** Os notebooks geram um catálogo fictício reproduzível (`drive/catalogo-v2`) e o medem com um gabarito. Para validar com **dados reais** leia a seção [8](#8-dados-reais-o-que-fazer-e-o-que-ainda-nao-esta-pronto): o contrato de dados está descrito, mas **o adaptador para dados reais ainda não foi construído**. Para **treinar em uma base nova com estrutura nova** (taxonomia e campos diferentes) no Colab, leia a seção [11](#11-treinar-em-uma-base-nova-com-estrutura-nova-no-colab). Com dados reais de cliente, enviar produtos ao Colab, ao Google Drive ou ao Ollama Cloud **precisa de validação do time**.
 
@@ -11,7 +11,7 @@ Tudo o que é necessário para **executar de novo os testes** da PoC e **respond
 4. [Como executar (passo a passo)](#4-como-executar-passo-a-passo) — inclui o **checklist do que levar para o Colab** (4.1)
 5. [Cada notebook: o que faz, o que grava, o que se espera](#5-cada-notebook-o-que-faz-o-que-grava-o-que-se-espera)
 6. [Cada pergunta: contexto, como é medida, como ler, o que se espera](#6-cada-pergunta-contexto-como-e-medida-como-ler-o-que-se-espera)
-7. [O Naive Bayes agora é o da biblioteca scikit-learn](#7-o-naive-bayes-agora-e-o-da-biblioteca-scikit-learn)
+7. [O Naive Bayes: código já testado (padrão) ou scikit-learn (opcional)](#7-o-naive-bayes-codigo-ja-testado-padrao-ou-scikit-learn-opcional)
 8. [Dados reais: o que fazer e o que ainda não está pronto](#8-dados-reais-o-que-fazer-e-o-que-ainda-nao-esta-pronto)
 9. [Critérios fixos por pergunta](#9-criterios-fixos-por-pergunta)
 10. [Estado, limites e histórico](#10-estado-limites-e-historico)
@@ -48,7 +48,7 @@ Os notebooks **A** e **B** não respondem a pergunta nenhuma: preparam a base e 
 | Sinal | O que é | Onde |
 |---|---|---|
 | **Vendedor** (ou **nó legado** mapeado, na migração) | a categoria que o vendedor informou | regra |
-| **Naive Bayes** | classificador de texto treinado só nos exemplos rotulados de treino | **scikit-learn** (seção 7) |
+| **Naive Bayes** | classificador de texto treinado só nos exemplos rotulados de treino | o **código já testado** (`NaiveBayesCodigo`); o **scikit-learn** é opcional (seção 7) |
 | **Laya ajustado** | modelo de linguagem pequeno com ajuste fino, perguntas de escolha em 3 níveis (departamento › categoria › subcategoria) e a opção “nenhuma destas” | `laya3-ft-5000` (treinado no bloco B) |
 | **Vizinhos** | os 10 produtos de treino mais parecidos (embeddings `multilingual-e5-base`) votam | `pipeline_v3.py` |
 | **Pergunta de energia** | “este produto usa energia elétrica?” decide a disputa entre vizinhas (churrasqueira a carvão × elétrica) | Laya |
@@ -123,15 +123,15 @@ Tudo vai para a mesma pasta do Drive, **`MyDrive/laya-teste-r8/`** (estrutura pl
 
 | # | Item | Já foi testado? | Onde está hoje | Onde vai no Drive | Quem usa |
 |---|---|---|---|---|---|
-| 1 | **6 notebooks** (`laya_r8_a…`, `_b…`, `_c…`, `_d…`, `imagem_r8`, `laya_r8_f_painel`) | A, B e C rodaram na versão anterior; a versão desta pasta (com o Naive Bayes do scikit-learn e o mapa de perguntas) **não** | repo: `poc_laya/drive/*.ipynb` | `laya-teste-r8/` (raiz) | todos |
-| 2 | **`pipeline_v3.py`** (a lógica do agente em Python, com o Naive Bayes do scikit-learn) | a lógica foi validada contra o Java na rodada 6/7 (portão de paridade); o **scikit-learn ainda não rodou no Colab** (só em dados de brinquedo) | repo: `poc_laya/drive/pipeline_v3.py` | raiz | A a F |
+| 1 | **6 notebooks** (`laya_r8_a…`, `_b…`, `_c…`, `_d…`, `imagem_r8`, `laya_r8_f_painel`) | A, B e C rodaram na versão anterior; a versão desta pasta (com o mapa de perguntas e a correção da ficha) **não** | repo: `poc_laya/drive/*.ipynb` | `laya-teste-r8/` (raiz) | todos |
+| 2 | **`pipeline_v3.py`** (a lógica do agente em Python; Naive Bayes padrão = o código já testado) | a lógica foi validada contra o Java na rodada 6/7 (portão de paridade); o Naive Bayes **opcional** do scikit-learn (`POC_NB=sklearn`) **não rodou no Colab** (só em dados de brinquedo) | repo: `poc_laya/drive/pipeline_v3.py` | raiz | A a F |
 | 3 | **`fluxo_r8.py`**, **`perguntas_poc.py`**, **`r8-criterios.json`** | sim (rodaram no C); `perguntas_poc.py` é novo | repo: `poc_laya/drive/` | raiz | B a F |
 | 4 | **`r6-escolha-val.json`**, **`r6-escolha-val-d.json`**, **`r6-referencias.json`**, **`taxonomia.json`** (a original) | sim | repo: `poc_laya/drive/` | raiz | A (paridade), C (versão “rodada 7”) |
 | 5 | **`catalogo-v2/`** (gerador da base sintética com `--rodada8` e avaliador `avaliar.mjs`; **sem** a pasta `dados`) | gerador: hash conferido na rodada 6; base `--rodada8` gerada no bloco A; avaliador: usado no C | repo: `poc_laya/drive/catalogo-v2/` | `laya-teste-r8/catalogo-v2/` | A a F (Node 18+ é instalado pelo notebook) |
 | 6 | **`java-fonte/`** (só o pacote `core` do agente Java) | não (é o plano B) | repo: `poc_laya/drive/java-fonte/` | `laya-teste-r8/java-fonte/` | só se o portão das linhas de treino do B falhar |
 | 7 | **Laya `laya2-ft-5000`** (checkpoint ajustado da rodada 6: `model.safetensors`, `rl_agent_config.json`, `questions.json`, `treino_gpu.json`, `encoder/`, `tokenizer/`) | **sim**: 94,6% de acerto sozinho no golden (rodada 6) e passou na trava e na paridade | **fora do repo** (≈1,8 GB). Local: `C:\Users\paula\Downloads\results\laya2-ft-5000` (a pasta, não o `.zip`). sha256 do `model.safetensors`: `10221499db39e94229f5b1ae0fdf3277f2171d73a2883f3a15a0220c9fc7a2d7` | `laya-teste-r8/laya-ft/laya2-ft-5000/` | A (trava e paridade), B (portão das linhas) |
 | 8 | **Laya `laya3-ft-5000`** (checkpoint da rodada 8) | **sim**: treinado e travado no bloco B (o hash fica em `laya-ft/hashes-r8.json` e em `saida-r8/estado.json › b`) | **fora do repo**. Foi gerado dentro do Colab e **só existe no seu Drive**, em `laya-teste-r8/laya-ft/laya3-ft-5000/`. **Não precisa subir de novo**; para guardá-lo, baixe essa pasta do Drive | já está em `laya-teste-r8/laya-ft/laya3-ft-5000/` | C, D |
-| 9 | **Naive Bayes** | o **código escrito à mão**: testado (paridade com a rodada 6/7). O **scikit-learn**: ainda **não** no Colab | **não é um arquivo**: é treinado a cada execução nos exemplos do `treino_5000` (segundos) e vive em `pipeline_v3.py` | — | C, D, E |
+| 9 | **Naive Bayes** | o **código escrito à mão** (padrão): testado (paridade com a rodada 6/7; os blocos A, B e C rodaram com ele). O **scikit-learn** (opcional): ainda **não** no Colab | **não é um arquivo**: é treinado a cada execução nos exemplos do `treino_5000` (segundos) e vive em `pipeline_v3.py` | — | C, D, E |
 | 10 | **Embeddings e vizinhos** (`intfloat/multilingual-e5-base`) | sim (rodaram no C) | baixados do Hugging Face pelo próprio notebook; o índice é gravado em `saida-r8/cache/*.npy` | — | C, D, E |
 | 11 | **SigLIP 2 e Qwen2.5-VL-7B** (bloco E) | não | baixados do Hugging Face pelo notebook; as fotos do ABO ficam em `abo-recorte/` (**nunca no repositório**) | — | E |
 | 12 | **`saida-r7/`** (previsões de itens novos da rodada 7, `novos*.jsonl`) | — (opcional) | no seu Drive da rodada 7: `MyDrive/laya-teste/saida-r7/previsoes/novos-<rótulo>.jsonl` | `laya-teste-r8/saida-r7/` | D (diagnóstico dos erros de duplicado; sem ela a etapa é pulada) |
@@ -140,18 +140,19 @@ Tudo vai para a mesma pasta do Drive, **`MyDrive/laya-teste-r8/`** (estrutura pl
 **Resumo do que você precisa ter no Drive para testar do zero:** os itens **1 a 5** (a pasta `poc_laya/drive/` inteira), o **item 7** (copiado à parte) e o **item 13**. O item 8 se gera sozinho no bloco B (ou já existe, se você já rodou o B).
 
 #### Já rodei os blocos A a C com a versão anterior: o que fazer ao trocar para esta pasta
-Troque a **raiz** do Drive pelos arquivos de `poc_laya/drive/` (substitua os notebooks, `pipeline_v3.py`, `fluxo_r8.py`, `catalogo-v2/avaliacao/avaliar.mjs` e acrescente `perguntas_poc.py`). **Não precisa retreinar o Laya** (`laya3-ft-5000` continua válido). Mas, como o **Naive Bayes mudou**, parte do que está gravado ficou **desatualizado** e você deve **apagar** para não misturar resultados dos dois:
+O Naive Bayes padrão **continua sendo o código já testado**, então os resultados e os caches gravados **seguem válidos**: **não apague nada** e **não precisa retreinar o Laya** (`laya3-ft-5000` continua válido). Substitua no Drive só os arquivos de `poc_laya/drive/` (os notebooks, `pipeline_v3.py`, `fluxo_r8.py`, `catalogo-v2/avaliacao/avaliar.mjs`) e acrescente `perguntas_poc.py`. Depois:
+1. **Bloco C:** rode **só as células novas do fim** (a correção de regra da ficha: diagnóstico e regra `v2`). Elas reaproveitam do Drive as categorias já decididas e as sugestões do Laya em cache, sem GPU.
+2. **Bloco D** e depois o **F** (o D passa a usar a ficha nova).
+3. O **E** não depende do Naive Bayes e pode ficar como está.
+
+**Só se um dia ligar o Naive Bayes do scikit-learn** (`POC_NB=sklearn`), parte do que está gravado fica desatualizado e deve ser apagado:
 
 | Pasta ou arquivo no Drive (`saida-r8/`) | Fazer | Por quê |
 |---|---|---|
-| `cache/r8-todos-laya.jsonl`, `cache/r8-todos-emb.npy`, `cache/emb-treino5000-r8.npy`, `cache/emb-novos-r8.npy` | **manter** | não dependem do Naive Bayes (é o Laya e os embeddings) e são a parte lenta |
-| `cache/fichas/` (todos os `v3-E*`, `migracao-N*`, `abl-*`), `cache/ficha-r7-todos.jsonl`, `cache/fichas-ablacao/`, `cache/llm-*.jsonl` | **apagar** | foram calculados com as categorias decididas pelo Naive Bayes antigo. Efeito colateral: o Laya refaz as sugestões de atributo na GPU (30 a 70 min, estimativa) |
-| `r8-escolhas-val.json` | **apagar** | a regra de votação foi calibrada com o Naive Bayes antigo; é recalibrada no bloco C |
-| `c/`, `d/`, `resultados/` | **apagar** (ou renomear para `*-nb-antigo`) | resultados do Naive Bayes antigo |
-| `estado.json` | **manter** as chaves `a` e `b`; **remover** `c`, `d`, `e`, `f` | os blocos seguintes recusam rodar se o anterior não terminou |
-| `a/` | manter; o bloco A, ao rodar de novo, grava a paridade nova em subpastas (`a/paridade/codigo` e `a/paridade/sklearn`) | assim você vê o efeito da troca do Naive Bayes |
-
-Depois: rode o **A** (paridade com o código escrito à mão = portão; com o scikit-learn = informativa), pule o **B** (o `laya3` já existe, ele se pula sozinho) e rode **C › D › F**. O **E** não depende do Naive Bayes do pipeline e pode ficar como está.
+| `cache/r8-todos-laya.jsonl`, `cache/r8-todos-emb.npy`, `cache/emb-treino5000-r8.npy`, `cache/emb-novos-r8.npy` | **manter** | não dependem do Naive Bayes |
+| `cache/fichas/`, `cache/ficha-r7-todos.jsonl`, `cache/fichas-ablacao/`, `cache/llm-*.jsonl` | **apagar** | calculados com as categorias decididas pelo Naive Bayes do código. O Laya refaz as sugestões de atributo na GPU (30 a 70 min, estimativa) |
+| `r8-escolhas-val.json`, `c/`, `d/`, `resultados/` | **apagar** | a regra de votação foi calibrada com o Naive Bayes do código |
+| `estado.json` | manter `a` e `b`; **remover** `c`, `d`, `e`, `f` | os blocos seguintes recusam rodar se o anterior não terminou |
 
 ---
 
@@ -161,8 +162,8 @@ Depois: rode o **A** (paridade com o código escrito à mão = portão; com o sc
 - **Portão do hash (1ª célula).** Gera a base original **sem** `--rodada8` e compara o sha256 de `produtos.jsonl`, `splits.json`, `taxonomia.json`, `novos.jsonl` e `buscas.jsonl` com os da rodada 6. **Se diferir, nada mais roda.** *Espera:* os cinco “IGUAL”.
 - **Base nova** (`--rodada8`, semente 20261013, ruído 1,5): 100 mil produtos, 9 subcategorias novas, ruídos de atributo, árvore legada de ~1.700 nós, ambiguidade, buscas novas e itens novos. Confere os limites da cascata (≤ 16 departamentos, ≤ 6 categorias por departamento, ≤ 10 subcategorias por categoria).
 - **Trava do `laya2-ft-5000`:** imprime nome e hash do `model.safetensors` e acerta o departamento de 120 produtos de validação (≥ 90% e 20 pontos acima do Laya base). *Por quê:* na rodada 6 um servidor respondeu com o modelo base achando que era o ajustado.
-- **Paridade (duas passadas).** (1) **Portão:** o pipeline com o Naive Bayes escrito à mão reproduz a rodada 6/7 (0,5 ponto no saneamento e na ficha; 1 ponto nos itens novos e na busca). (2) **Informativa:** repete com o Naive Bayes do scikit-learn e mostra o *efeito da troca* linha a linha. *Espera:* a passada 1 sem nenhuma linha fora da tolerância; na passada 2, diferenças pequenas.
-- *Grava:* `a/portao-hash-original.json`, `a/hashes-base-r8.json`, `a/paridade.json`, `a/paridade-sklearn.json`.
+- **Paridade.** **Portão:** o pipeline com o Naive Bayes do código reproduz a rodada 6/7 (0,5 ponto no saneamento e na ficha; 1 ponto nos itens novos e na busca). *Espera:* nenhuma linha fora da tolerância. **Opcional:** com `COMPARAR_COM_SKLEARN = True` repete com o Naive Bayes do scikit-learn e mostra o *efeito da troca* linha a linha (não bloqueia).
+- *Grava:* `a/portao-hash-original.json`, `a/hashes-base-r8.json`, `a/paridade.json` (e `a/paridade-sklearn.json`, só se a comparação opcional for ligada).
 
 ### B · `laya_r8_b_treino_laya` (não responde pergunta; prepara e trava)
 - **Portão das linhas de treino:** gera em Python as linhas de ajuste fino da base original e compara com o `questions.json` do `laya2-ft-5000`. Se divergir, **para e mostra a diferença**; `USAR_PLANO_B = True` instala o JDK 17 no Colab e roda o gerador Java original (`java-fonte/`).
@@ -171,7 +172,7 @@ Depois: rode o **A** (paridade com o código escrito à mão = portão; com o sc
 - *Grava:* `laya-ft/laya3-ft-5000/`, `b/portao-linhas.json`, `b/trava-laya3.json`.
 
 ### C · `laya_r8_c_f1_e_f2` (responde P1, P5, parte de P9)
-- Sinais dos 100 mil produtos (Naive Bayes **scikit-learn**, Laya, vizinhos); **calibração na validação** da regra de votação, da estatística do catálogo (folga do “fora do normal”), da faixa de dúvida e da pureza dos nós; **F1** (diagnóstico da árvore em quatro versões, publicação da árvore nova como versão, migração); **F2** (dado errado do vendedor); **ambiguidade**.
+- Sinais dos 100 mil produtos (Naive Bayes do código, Laya, vizinhos); **calibração na validação** da regra de votação, da estatística do catálogo (folga do “fora do normal”), da faixa de dúvida e da pureza dos nós; **F1** (diagnóstico da árvore em quatro versões, publicação da árvore nova como versão, migração); **F2** (dado errado do vendedor); **ambiguidade**.
 - No fim do notebook: **correção de regra da ficha** (diagnóstico de quem trocou o valor do vendedor + regra `v2`, sem GPU), feita depois da primeira execução.
 - *Grava:* `r8-escolhas-val.json` (antes de medir o teste), `c/…`, `resultados/c.json`.
 
@@ -249,15 +250,15 @@ Convenção: **Atende / Não atende / Não medido** vêm de `r8-criterios.json` 
 
 ---
 
-## 7. O Naive Bayes agora é o da biblioteca scikit-learn
+## 7. O Naive Bayes: código já testado (padrão) ou scikit-learn (opcional)
 
-**O que mudou.** Antes, o pipeline usava um Naive Bayes **escrito à mão** (a porta Python do `ClassificadorTexto.java`, com TF-IDF em ponto fixo). Nesta PoC `pv.NaiveBayes` é a classe `NaiveBayesSklearn` (em `drive/pipeline_v3.py`): `sklearn.naive_bayes.MultinomialNB(alpha=0,1)` sobre `sklearn.feature_extraction.text.TfidfVectorizer` (sem normalização L2, idf suavizado, que é a mesma fórmula do código). Os **termos** são os mesmos (título ×3, valores dos atributos, destaques e descrição) e a confiança continua calibrada por **temperatura** em 20% dos exemplos separados antes. A **interface não mudou** (`treinar`, `prever_lote`, `temperatura`), então nenhum notebook precisou mudar a chamada. O código antigo continua em `NaiveBayesCodigo`, **só** para a paridade e para comparar.
+**O que é o padrão.** `pv.NaiveBayes` é o **Naive Bayes escrito à mão** (`NaiveBayesCodigo`, em `drive/pipeline_v3.py`): a porta Python do `ClassificadorTexto.java`, com TF-IDF em ponto fixo, título ×3, alfa 0,1 e confiança calibrada por temperatura em 20% dos exemplos separados antes. **É o que os blocos A, B e C já usaram** e o que reproduz os números da rodada 6/7 no portão de paridade. Por isso é o padrão: **mesmo código, mesmos resultados já testados**.
 
-**Diferenças conhecidas.** (1) a *a priori* de classe é a da biblioteca (frequência observada, sem o suavizado do código); (2) o TF-IDF não é arredondado em ponto fixo; (3) o embaralhamento da calibração usa `numpy` (semente), não o `Random` do Java. Por isso os números **não são idênticos** aos da rodada 6/7.
+**A alternativa opcional.** `NaiveBayesSklearn` usa a biblioteca (`sklearn.naive_bayes.MultinomialNB(alpha=0,1)` sobre `TfidfVectorizer`, sem normalização L2 e com idf suavizado, que é a mesma fórmula do código; mesmos termos; mesma calibração por temperatura). A interface é a mesma (`treinar`, `prever_lote`, `temperatura`). Para usá-la em todos os blocos, defina `POC_NB=sklearn` **antes** de importar o pipeline (por exemplo, na primeira célula: `import os; os.environ["POC_NB"] = "sklearn"`). Diferenças conhecidas: a *a priori* de classe é a da biblioteca (frequência observada, sem o suavizado do código), o TF-IDF não é arredondado em ponto fixo e o embaralhamento da calibração usa `numpy` em vez do `Random` do Java; os números **não são idênticos** aos da rodada 6/7.
 
-**Como saber o efeito da troca.** O bloco A roda a paridade **duas vezes** com os mesmos dados e o mesmo Laya: com o código (portão, prova que o pipeline reproduz o agente Java) e com o scikit-learn (informativa), e grava a tabela *efeito da troca* em `a/paridade-sklearn.json`. Se o efeito for de décimos de ponto, a biblioteca substitui o código sem perda.
+**Como medir o efeito da troca.** No bloco A, ligue `COMPARAR_COM_SKLEARN = True`: a paridade roda uma segunda vez, com o Naive Bayes da biblioteca (mesmos dados, mesmo Laya, em cache), e grava a tabela *efeito da troca* em `a/paridade-sklearn.json`. Não bloqueia.
 
-**O que foi e não foi verificado.** A classe foi testada localmente só em **dados de brinquedo** (acerto e calibração equivalentes aos do código escrito à mão); **no Colab ainda não foi executada**. O bloco E (imagem) já usava `MultinomialNB`/`TfidfVectorizer` do scikit-learn desde o início.
+**O que foi e não foi verificado.** A classe do scikit-learn foi testada localmente só em **dados de brinquedo** (acerto e calibração equivalentes aos do código); **no Colab não foi executada**. Se um dia ela virar o padrão, apague os caches que dependem do Naive Bayes (seção 4.1). O bloco E (imagem) usa `MultinomialNB`/`TfidfVectorizer` do scikit-learn desde o início, em outro problema (tipos de produto do ABO), e não é afetado.
 
 ---
 
@@ -340,7 +341,7 @@ Gravados em `drive/r8-criterios.json` **antes** do código e nunca alterados dep
 ## 10. Estado, limites e histórico
 
 - **Estado ao empacotar.** Os blocos **A, B e C foram executados** no Colab (o C teve de ser executado para chegar à correção abaixo); **não há resultados dos blocos D, E e F neste repositório**. Os notebooks foram escritos e conferidos só na sintaxe (`py_compile`, `pyflakes`, JSON dos notebooks, `node --check`, `mvn compile`); os testes Java novos (limpeza de entrada do `Preparador`) foram só compilados.
-- **O Naive Bayes do scikit-learn ainda não foi executado no Colab** (seção 7); os blocos A e B rodaram com o código escrito à mão.
+- **O Naive Bayes padrão é o código já testado**: os blocos A, B e C rodaram com ele. O scikit-learn é opcional (seção 7) e **não foi executado no Colab**.
 - **Primeira execução do bloco C.** F1, “não se aplica”, “contradiz o anúncio” e consumo de LLM atenderam. **Não atenderam:** fora do normal (36,1% trocados por outro valor, meta 0), sem pista (28,7% “corrigidos sem base”, meta ≤ 1%), atributos certos estragados (2,7%, meta ≤ 1%) e faixa de dúvida com LLM (72% de acerto, meta ≥ 95%).
 - **Correção de regra feita depois da primeira execução** (célula no fim do bloco C, registrada como tal no painel, com os números antes e depois): (1) um **diagnóstico** mostra qual etapa trocou cada valor do vendedor (anúncio, nó legado, Laya, LLM, estatística…) com 10 exemplos por etapa; (2) a **regra `v2`**: o valor do vendedor só muda por “não se aplica” ou por valor explícito diferente no título ou na descrição, Laya e nó legado só preenchem o que o vendedor não informou, fora do normal sai do filtro e não volta, **LLM nos atributos desligado**; (3) a medição passou a usar o **original** do vendedor lido pelo próprio pipeline (`atributos_originais`), com as definições antigas calculadas ao lado. **A causa não estava confirmada** ao empacotar (as hipóteses eram o encadeamento das etapas e duas definições de medição); o diagnóstico é quem decide. Os destaques (“Chave: valor”) do anúncio entram em “valor explícito”; se o diagnóstico mostrar que causam erro, restringir a título e descrição.
 - **Limites.** Calibração só na validação (nos nós da árvore, nos nós de **treino**); a auditoria com 300 itens por lote tem intervalo largo; a versão “Classificador + agente + Laya (rodada 7)” na base nova usa os **mesmos sinais** (Laya `laya3`) e a votação e a ficha da rodada 7; no bloco E, o gabarito é o do ABO (tipo, cor, material), que tem erros e lacunas; tempos são estimativas e projeções estão marcadas.
@@ -399,7 +400,7 @@ Regras: **nenhum id em dois conjuntos**; golden e teste **nunca** entram no trei
 **Passo 5 · Treine no Colab (GPU L4 de preferência, T4 serve; mantenha a aba aberta).**
 1. **Bloco B**: gera as linhas de treino do Laya com **as mesmas perguntas que o agente faz em produção** (departamento, categoria com 1 e 2 departamentos, subcategoria com “nenhuma destas”, ficha técnica) a partir do `treino_5000`, e treina a partir do checkpoint base `multilingual` (4 épocas, micro-lote 8, acumulação 8, amp e checkpointing: a configuração da rodada 6; pico de ~6,2 GB de VRAM). Grava em `laya-ft/<nome-novo>/` e **só copia para o Drive ao terminar** (se a sessão cair no meio, o que estava treinando se perde; checkpoints já prontos são pulados).
 2. **Trava do checkpoint** (no final do B e no início do C): imprime nome e hash do `model.safetensors` e acerta o **departamento de 120 produtos de validação** (≥ 90% e 20 pontos acima do Laya base). **Não pule**: na rodada 6 um servidor respondeu com o modelo base achando que era o ajustado.
-3. **Bloco C**: treina o Naive Bayes (scikit-learn) e monta o índice de vizinhos no `treino_5000`; **calibra só na validação** e grava `r8-escolhas-val.json` antes de medir.
+3. **Bloco C**: treina o Naive Bayes e monta o índice de vizinhos no `treino_5000`; **calibra só na validação** e grava `r8-escolhas-val.json` antes de medir.
 4. **Blocos D e F**: itens novos, busca, modo autônomo e o painel com a resposta de cada pergunta.
 
 **Passo 6 · Confira antes de acreditar nos números.**

@@ -13,7 +13,7 @@ md(r'''# Rodada 8, bloco A: bases e paridade
 **O que este bloco faz**
 1. **Portão do hash (primeira célula).** Gera a base original (semente 20261008) **sem** a opção `--rodada8` e compara o sha256 de `produtos.jsonl`, `splits.json`, `taxonomia.json`, `novos.jsonl` e `buscas.jsonl` com os da rodada 6. Se qualquer um diferir, **nada mais roda**: o gerador mudou e a rodada 8 não pode ser comparada com a 7.
 2. Instala o ambiente e gera a **base nova** (`--rodada8`, semente 20261013, ruído 1,5) com os ruídos F2, a árvore legada de ~1.700 nós, a ambiguidade, as buscas e os itens novos novos.
-3. **Paridade:** o `pipeline_v3` com todas as novidades desligadas (`Opcoes.v2()`) e o Naive Bayes escrito à mão reproduz os números da rodada 6/7 na base original (tolerância de 0,5 ponto no saneamento e na ficha; 1 ponto nos itens novos e na busca). Se falhar, **para**. Em seguida repete com o **Naive Bayes da biblioteca scikit-learn**, que é o que esta PoC usa, e mostra o efeito da troca (informativo).
+3. **Paridade:** o `pipeline_v3` com todas as novidades desligadas (`Opcoes.v2()`) e o Naive Bayes escrito à mão reproduz os números da rodada 6/7 na base original (tolerância de 0,5 ponto no saneamento e na ficha; 1 ponto nos itens novos e na busca). Se falhar, **para**. O Naive Bayes é o **código já testado** (o padrão); a comparação opcional com o da biblioteca scikit-learn fica desligada (`COMPARAR_COM_SKLEARN = False`).
 
 ''' + BLOCOS + "\n\n" + AVISOS)
 
@@ -122,13 +122,11 @@ del BASE; torch.cuda.empty_cache()
 fl.gravar_json(SAIDA / "a" / "trava-laya2.json", TRAVA)
 LOTE5 = pv.LayaLote(AG5, batch_size=BATCH)''')
 
-md(r'''## Paridade com a rodada 6/7 e o efeito de trocar o Naive Bayes
-**Nesta PoC o Naive Bayes é o da biblioteca** (`scikit-learn`: `MultinomialNB` sobre `TfidfVectorizer`), não o código escrito à mão que era a porta do `ClassificadorTexto.java`. Como os números de referência da rodada 6/7 foram medidos com o Naive Bayes do Java, a paridade roda **duas vezes**, com os mesmos dados e o mesmo Laya (as respostas do Laya são reaproveitadas do cache):
+md(r'''## Paridade com a rodada 6/7 (e, opcionalmente, o efeito de trocar o Naive Bayes)
+**O Naive Bayes desta PoC é o código já testado** (`NaiveBayesCodigo`, a porta Python do `ClassificadorTexto.java`): é o que reproduz os números da rodada 6/7 e o que os blocos A, B e C já usaram. Os números de referência foram medidos com o Naive Bayes do Java, então:
 
-1. **Com o Naive Bayes escrito à mão (`NaiveBayesCodigo`) — é o portão.** Prova que o pipeline Python reproduz o agente Java e a rodada 7 (0,5 ponto no saneamento e na ficha; 1 ponto nos itens novos e na busca). Se falhar, **para**: nada do que vem depois é comparável.
-2. **Com o Naive Bayes do scikit-learn — informativo, não bloqueia.** Mostra, linha a linha, **quanto os números mudam por trocar o código pela biblioteca** (coluna "efeito da troca"). É o que vale daqui para a frente (todos os blocos usam o scikit-learn).
-
-Se o efeito da troca for pequeno (décimos de ponto), a biblioteca pode substituir o código sem perda. Se for grande em alguma linha, a PoC não quebra, mas essa linha deixa de ser comparável com a rodada 6/7.''')
+1. **Portão (sempre roda).** O pipeline Python com o Naive Bayes do código reproduz o agente Java e a rodada 7 (0,5 ponto no saneamento e na ficha; 1 ponto nos itens novos e na busca). Se falhar, **para**: nada do que vem depois é comparável.
+2. **Comparação com o scikit-learn (opcional, desligada).** Com `COMPARAR_COM_SKLEARN = True` repete a paridade com o Naive Bayes da biblioteca (`MultinomialNB` + `TfidfVectorizer`) e mostra, linha a linha, **quanto os números mudam por trocar o código pela biblioteca**. Não bloqueia. Para usar o scikit-learn em todos os blocos, defina a variável de ambiente `POC_NB=sklearn` **antes** de importar o pipeline (e apague os caches que dependem do Naive Bayes: veja o README, seção 4.1).''')
 
 code(r'''import pandas as pd
 REF = json.load(open(TRAB / "r6-referencias.json", encoding="utf-8"))
@@ -245,19 +243,24 @@ if not bool(df_c["ok"].all()):
     raise RuntimeError("PARIDADE FALHOU em %d linha(s): %s. O pipeline Python nao reproduz o agente; o bloco B nao pode seguir." % ((~df_c["ok"]).sum(), list(df_c[~df_c["ok"]]["item"])))
 print("PARIDADE OK: o pipeline_v3 (Naive Bayes escrito a mao) reproduz a rodada 6/7 dentro das tolerancias.")
 
-# ---- 2) INFORMATIVO: o Naive Bayes do scikit-learn (o que a PoC usa dai em diante)
-NB2_SK = pv.NaiveBayes.treinar(EXEMPLOS_2000, 42)
-print("\nNaive Bayes em uso na PoC:", NB2_SK.implementacao, "| temperatura %.2f | acerto na calibracao %.1f%%" % (NB2_SK.temperatura, 100 * NB2_SK.acerto_calibracao))
-PARID_SK = rodar_paridade(NB2_SK, "sklearn", False)
-df_s = pd.DataFrame(PARID_SK)
-cmp = df_c[["grupo", "item", "obtido", "rodada6"]].rename(columns={"obtido": "codigo"}).merge(df_s[["item", "obtido"]].rename(columns={"obtido": "sklearn"}), on="item")
-cmp["efeito_da_troca"] = (cmp["sklearn"] - cmp["codigo"]).round(2)
-cmp["sklearn_vs_rodada6"] = (cmp["sklearn"] - cmp["rodada6"]).round(2)
-print("\n== INFORMATIVO: Naive Bayes do scikit-learn x escrito a mao x rodada 6/7 (nao bloqueia)")
-print(cmp.to_string(index=False))
-maior = cmp.reindex(cmp["efeito_da_troca"].abs().sort_values(ascending=False).index).head(5)
-print("\nmaiores efeitos da troca (pontos percentuais):", [(r["item"], r["efeito_da_troca"]) for _, r in maior.iterrows()])
-fl.gravar_json(SAIDA / "a" / "paridade-sklearn.json", {"implementacao": NB2_SK.implementacao, "tabela": cmp.to_dict(orient="records"), "temperatura": NB2_SK.temperatura, "acerto_calibracao": NB2_SK.acerto_calibracao})
+# ---- 2) OPCIONAL (desligado por padrao): a comparacao com o Naive Bayes do scikit-learn
+COMPARAR_COM_SKLEARN = False            # True: repete a paridade com o Naive Bayes da biblioteca e mostra o efeito da troca (informativo, nao bloqueia)
+maior_efeito = None
+if COMPARAR_COM_SKLEARN:
+    NB2_SK = pv.NaiveBayesSklearn.treinar(EXEMPLOS_2000, 42)
+    print("\nNaive Bayes da biblioteca:", NB2_SK.implementacao, "| temperatura %.2f | acerto na calibracao %.1f%%" % (NB2_SK.temperatura, 100 * NB2_SK.acerto_calibracao))
+    PARID_SK = rodar_paridade(NB2_SK, "sklearn", False)
+    df_s = pd.DataFrame(PARID_SK)
+    cmp = df_c[["grupo", "item", "obtido", "rodada6"]].rename(columns={"obtido": "codigo"}).merge(df_s[["item", "obtido"]].rename(columns={"obtido": "sklearn"}), on="item")
+    cmp["efeito_da_troca"] = (cmp["sklearn"] - cmp["codigo"]).round(2)
+    cmp["sklearn_vs_rodada6"] = (cmp["sklearn"] - cmp["rodada6"]).round(2)
+    print("\n== INFORMATIVO: Naive Bayes do scikit-learn x escrito a mao x rodada 6/7 (nao bloqueia)")
+    print(cmp.to_string(index=False))
+    maior = cmp.reindex(cmp["efeito_da_troca"].abs().sort_values(ascending=False).index).head(5)
+    print("\nmaiores efeitos da troca (pontos percentuais):", [(r["item"], r["efeito_da_troca"]) for _, r in maior.iterrows()])
+    fl.gravar_json(SAIDA / "a" / "paridade-sklearn.json", {"implementacao": NB2_SK.implementacao, "tabela": cmp.to_dict(orient="records"), "temperatura": NB2_SK.temperatura, "acerto_calibracao": NB2_SK.acerto_calibracao})
+    maior_efeito = float(cmp["efeito_da_troca"].abs().max())
+print("\nNaive Bayes em uso nos demais blocos:", pv.NaiveBayes.implementacao)
 fl.concluir_bloco(str(SAIDA), "a", {"paridade_linhas": len(PARID_CODIGO), "hash_original": "igual", "trava_laya2_sha256": TRAVA["sha256_model_safetensors"], "pipeline": pv.VERSAO_PIPELINE,
-                                    "naive_bayes_da_poc": NB2_SK.implementacao, "maior_efeito_da_troca_do_nb_pontos": float(cmp["efeito_da_troca"].abs().max())})
+                                    "naive_bayes_da_poc": pv.NaiveBayes.implementacao, "maior_efeito_da_troca_do_nb_pontos": maior_efeito})
 print("bloco A concluido. Proximo: laya_r8_b_treino_laya.")''')

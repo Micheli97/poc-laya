@@ -565,7 +565,10 @@ def ler_treino(caminho: str, tx: Taxonomia) -> list:
 
 
 class NaiveBayesCodigo:
-    """(O Naive Bayes ESCRITO A MAO, porta do Java; a PoC usa NaiveBayesSklearn.) Naive Bayes multinomial com contagens ponderadas por TF-IDF em ponto fixo (x1000), titulo x3, alfa 0,1, temperatura calibrada em 20% separados."""
+    """(O Naive Bayes ESCRITO A MAO, porta do Java: o PADRAO da PoC, o que foi testado nas rodadas 6, 7 e 8.) Naive Bayes multinomial com contagens ponderadas por TF-IDF em ponto fixo (x1000), titulo x3, alfa 0,1, temperatura calibrada em 20% separados."""
+
+    implementacao = "codigo escrito a mao (porta do ClassificadorTexto.java)"
+    acerto_calibracao = None
 
     def __init__(self, categorias, vocab, matriz_log, prior, idf, temperatura, versao):
         self.categorias, self.vocab, self.L, self.prior, self.idf, self.temperatura, self.versao = categorias, vocab, matriz_log, prior, idf, temperatura, versao
@@ -655,10 +658,10 @@ class NaiveBayesCodigo:
 
 
 # =====================================================================================================================
-# 4b. Naive Bayes da biblioteca scikit-learn (PoC): no lugar do codigo proprio
+# 4b. Naive Bayes da biblioteca scikit-learn (OPCIONAL na PoC): alternativa ao codigo proprio
 # =====================================================================================================================
-# O pipeline_v2/v3 trazia um Naive Bayes escrito a mao (a porta do ClassificadorTexto do Java, agora chamado NaiveBayesCodigo, mantido so para comparar). Na PoC o Naive Bayes
-# e o da biblioteca: sklearn.naive_bayes.MultinomialNB sobre TF-IDF (sklearn.feature_extraction.text.TfidfVectorizer). Mesmos termos (titulo x3, valores dos atributos, destaques e
+# O pipeline_v2/v3 traz um Naive Bayes escrito a mao (a porta do ClassificadorTexto do Java, chamado NaiveBayesCodigo): e o PADRAO da PoC, o que foi testado e reproduz os resultados
+# da rodada 6/7. Esta classe e uma ALTERNATIVA opcional (variavel de ambiente POC_NB=sklearn, ou pv.NaiveBayesSklearn direto) com o Naive Bayes da biblioteca: sklearn.naive_bayes.MultinomialNB sobre TF-IDF (sklearn.feature_extraction.text.TfidfVectorizer). Mesmos termos (titulo x3, valores dos atributos, destaques e
 # descricao) e mesma calibracao de confianca por temperatura em 20% separados; so o contador e o TF-IDF passam a ser da biblioteca. A interface e a mesma (treinar, prever_lote,
 # temperatura), entao nada mais no pipeline muda. As diferencas conhecidas em relacao ao codigo: a priori de classe da biblioteca (frequencia observada, sem o suavizado do
 # codigo), o TF-IDF sem arredondamento em ponto fixo, e o embaralhamento da calibracao com numpy (nao com o Random do Java).
@@ -738,7 +741,8 @@ class NaiveBayesSklearn:
         return [self.categorias[k] for k in i], [float(p[r, k]) for r, k in enumerate(i)]
 
 
-NaiveBayes = NaiveBayesSklearn         # a PoC usa a biblioteca: pv.NaiveBayes.treinar(...) em todos os notebooks. O codigo escrito a mao fica em NaiveBayesCodigo (so para comparar e para a paridade com a rodada 6/7)
+NB_IMPLEMENTACAO = os.environ.get("POC_NB", "codigo")        # "codigo" (padrao: o ja testado) | "sklearn" (opcional)
+NaiveBayes = NaiveBayesSklearn if NB_IMPLEMENTACAO == "sklearn" else NaiveBayesCodigo      # pv.NaiveBayes.treinar(...) em todos os notebooks
 
 
 # =====================================================================================================================
@@ -2725,7 +2729,7 @@ def escolher_consulta_parecida(buscas: list, subcategoria: str, filtros: dict):
 # por padrao: o campo categoria_legada do Produto, a limpeza de entrada (2.1) e a leitura da taxonomia com sobreposicoes.
 # Cada novidade tem um interruptor em Opcoes; com todos desligados o pipeline reproduz a rodada 7 (paridade).
 # =====================================================================================================================
-VERSAO_PIPELINE = "pipeline_v3 (rodada 8) + Naive Bayes scikit-learn (PoC)"
+VERSAO_PIPELINE = "pipeline_v3 (rodada 8) | Naive Bayes: " + NaiveBayes.implementacao
 TIPOS_DE_NO = ("categoria", "duplicado", "atributo", "lixo")
 
 

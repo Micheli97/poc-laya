@@ -80,7 +80,7 @@ def busca_linha(r):
     return {"todas_P@10_%": g("todas", "P@10_%"), "f2_P@10_%": g("f2", "P@10_%"), "com_modelo_P@10_%": g("com_modelo", "P@10_%"), "sem_resposta_vazias_%": g("sem_resposta", "vazia_ou_aviso_%"), "corrigidas_P@10_%": g("corrigidas", "P@10_%")}
 PAINEL = {
     "perguntas_da_poc": [{**{k: v for k, v in p.items() if k != "onde"}, "onde": [list(o) for o in p["onde"]], "veredito": VEREDITOS[p["id"]]} for p in pq.PERGUNTAS],
-    "pipeline": "pipeline_v3 (rodada 8) + Naive Bayes scikit-learn (PoC)", "gerado_em": time.strftime("%Y-%m-%d %H:%M:%S"), "blocos": ESTADO, "blocos_que_faltam": FALTAM,
+    "pipeline": "pipeline_v3 (rodada 8)", "gerado_em": time.strftime("%Y-%m-%d %H:%M:%S"), "blocos": ESTADO, "blocos_que_faltam": FALTAM,
     "criterios": LINHAS, "versoes_categoria_e_atributos": VERS,
     "f1_arvore": {"versao_usada": ARV.get("versao_final"), "versoes": {k: {"teste": v.get("teste"), "todos": v.get("todos")} for k, v in (ARV.get("resultados") or {}).items()}, "arvore_nova": MIG.get("arvore_nova"),
                   "migracao": {k: cat_linha(v) for k, v in (MIG.get("versoes") or {}).items()}},
